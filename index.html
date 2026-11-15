@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Boarding Quiz: Airline Trivia</title>
+<style>
+:root{--bg:#e8f0f7;--pass:#fff;--ink:#10264a;--mut:#58698a;--acc:#f0641a;--ok:#12814a;--bad:#c23232;--line:#c5d3e4}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1730;--pass:#13264a;--ink:#eaf1fb;--mut:#9db0cf;--acc:#ff8a4d;--ok:#4cc58a;--bad:#ff8080;--line:#2a4068}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 "Gill Sans","Trebuchet MS",system-ui,sans-serif}
+main{max-width:680px;margin:0 auto;padding:28px 16px 72px}
+h1{font-size:2.3rem;line-height:1.1;margin:0 0 6px;letter-spacing:-.5px}
+.sub{color:var(--mut);margin:0 0 26px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.set{display:block;width:100%;text-align:left;background:var(--pass);border:1px solid var(--line);border-left:8px solid var(--acc);border-radius:6px 16px 16px 6px;padding:16px 18px;margin-bottom:14px}
+.set strong{display:block;font-size:1.2rem}
+.set span{color:var(--mut)}
+.set:hover{transform:translateX(4px)}
+.pass{background:var(--pass);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.top{display:flex;justify-content:space-between;padding:12px 18px;background:var(--ink);color:var(--bg);font-weight:600}
+.bar{height:5px;background:var(--line)}
+.bar i{display:block;height:100%;background:var(--acc)}
+.q{padding:22px 18px 18px;font-size:1.35rem;line-height:1.3;margin:0;border-bottom:2px dashed var(--line)}
+.opts{padding:14px 18px 6px}
+.opt{display:block;width:100%;text-align:left;background:none;border:2px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:10px}
+.opt:hover:not(:disabled){border-color:var(--acc)}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 16%,var(--pass))}
+.opt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,var(--pass))}
+.fb{padding:0 18px;color:var(--mut);min-height:1.5em}
+.go,.btn{background:var(--acc);color:#1a0c02;border:0;border-radius:10px;padding:11px 20px;font-weight:700;margin:14px 18px 18px}
+.btn.alt{background:none;color:var(--ink);border:2px solid var(--line);margin:14px 8px 0 0}
+.end{padding:28px 18px}
+.end h2{font-size:2rem;margin:0 0 4px}
+@media(prefers-reduced-motion:no-preference){.set{transition:transform .15s}}
+</style>
+</head>
+<body>
+<main>
+<h1>Boarding Quiz</h1>
+<p class="sub">Pick a flight and see how many airlines you really know.</p>
+<div id="app"></div>
+</main>
+<script>
+const SETS=[
+{n:"United Airlines",d:"Hubs, history, planes and perks",r:[
+"Where is United headquartered?|Chicago|Atlanta|Dallas|Seattle|Willis Tower, with a huge hub at O’Hare.",
+"United is a founding member of which alliance?|Star Alliance|SkyTeam|oneworld|Pacific Alliance|Star Alliance formed in 1997.",
+"What is United’s IATA code?|UA|UL|UX|UN|Flight numbers start with UA.",
+"Which slogan is United famous for?|Fly the Friendly Skies|Wheels Up|The Way to Fly|Going Places Together|Used since the 1960s.",
+"Which airline did United merge with in 2010?|Continental|US Airways|Northwest|TWA|It kept the United name and Continental’s globe logo.",
+"What is United’s frequent flyer program?|MileagePlus|SkyMiles|AAdvantage|TrueBlue|Miles pay for flights and upgrades.",
+"What is United’s international business class?|Polaris|Economy Plus|United Club|Express|Lie-flat seats on long-haul flights.",
+"What sits at the center of United’s logo?|A globe|An eagle|A star|A compass|It came from Continental.",
+"Which Chicago airport is a United hub?|O’Hare|Midway|Rockford|Gary|Midway is mostly Southwest.",
+"Which city is a United hub?|Denver|Atlanta|Dallas/Fort Worth|Seattle|Atlanta is Delta’s, DFW is American’s.",
+"Which Texas city has a United hub?|Houston|Dallas|Austin|San Antonio|IAH came from Continental.",
+"Which D.C.-area airport is a United hub?|Dulles|Reagan National|BWI|Richmond|Washington Dulles (IAD).",
+"Which Pacific territory has a United hub?|Guam|Puerto Rico|American Samoa|U.S. Virgin Islands|It came from Continental Micronesia.",
+"United is a “Big Three” US airline. Which are the others?|American and Delta|Southwest and JetBlue|Alaska and Spirit|Frontier and Allegiant|The three biggest legacy carriers.",
+"Which music is famous in United’s ads?|Rhapsody in Blue|Take Five|Moon River|Fly Me to the Moon|Gershwin, used since the late 1980s.",
+"Which Boeing did United launch in 1995?|Boeing 777|Boeing 747|Boeing 737|Airbus A380|United was the 777 launch customer.",
+"Which jumbo jet did United retire in 2017?|Boeing 747|Boeing 777|Airbus A380|Boeing 787|The farewell flight was in November 2017.",
+"What is United’s top earnable elite status?|Premier 1K|Executive Platinum|Diamond Medallion|Mosaic|The others belong to American, Delta and JetBlue.",
+"United’s roots are an airmail carrier from which decade?|1920s|1890s|1900s|1950s|Varney Air Lines began in 1926.",
+"What is United Express?|Regional flights run by partner airlines|First class|Cargo division|A budget airline|Smaller planes that feed the hubs."]},
+{n:"Airlines of the World, Part 1",d:"Hubs, logos and flag carriers on every continent",r:[
+"Where does Delta’s name come from?|The Mississippi Delta|The Nile Delta|A Greek letter|A founder’s name|It began as a crop-dusting company.",
+"Which airline’s biggest hub is Dallas/Fort Worth?|American Airlines|Delta|Alaska|JetBlue|American is based in Fort Worth.",
+"Which airline trades under the ticker LUV?|Southwest|United|Spirit|Hawaiian|A nod to Love Field in Dallas.",
+"Which Seattle-area airline bought Hawaiian in 2024?|Alaska Airlines|Frontier|Southwest|Allegiant|The deal closed in 2024.",
+"JetBlue is headquartered in which NYC borough?|Queens|Manhattan|Brooklyn|The Bronx|Long Island City.",
+"Which budget airline puts animals on its tails?|Frontier|Alaska|Sun Country|Southwest|It is based in Denver.",
+"Which airline is Canada’s largest?|Air Canada|WestJet|Porter|Air Transat|Its main hub is Toronto Pearson.",
+"Which Calgary airline is Canada’s second largest?|WestJet|Air Canada|Porter|Flair|Based in Alberta.",
+"Which bird is on Lufthansa’s logo?|A crane|An eagle|A swan|A falcon|Lufthansa is Germany’s flag carrier.",
+"Which airline merged with KLM in 2004?|Air France|Lufthansa|Iberia|SAS|Both brands still exist.",
+"Which airline’s emblem is the Speedbird?|British Airways|Virgin Atlantic|easyJet|Aer Lingus|Inherited from BOAC.",
+"Which airline did Richard Branson found in 1984?|Virgin Atlantic|easyJet|British Airways|Jet2|Based at Heathrow.",
+"Which airline is Spain’s flag carrier, based in Madrid?|Iberia|Vueling|TAP|Air Europa|Part of IAG.",
+"Which airline has a shamrock on its tail?|Aer Lingus|Ryanair|British Airways|Icelandair|Ireland’s flag carrier.",
+"Which airline serves Denmark, Norway and Sweden?|SAS|Finnair|Icelandair|Norwegian|Scandinavian Airlines.",
+"Which airline is Switzerland’s flag carrier?|Swiss|Austrian|Brussels Airlines|Luxair|Hub in Zurich, part of Lufthansa Group.",
+"Which orange budget airline is based at Luton?|easyJet|Ryanair|Wizz Air|Jet2|Bright orange livery.",
+"Which budget airline flies in magenta and purple?|Wizz Air|easyJet|Vueling|Transavia|Mostly Central and Eastern Europe.",
+"Which airline is Russia’s flag carrier?|Aeroflot|S7|Ural|Pobeda|Hub at Sheremetyevo.",
+"Which airline uses Helsinki as its hub?|Finnair|SAS|Icelandair|Norwegian|A handy Europe–Asia stopover.",
+"Which airline is Portugal’s flag carrier?|TAP Air Portugal|Iberia|Aer Lingus|LOT|Hub in Lisbon.",
+"Which airline is based in Abu Dhabi?|Etihad|Emirates|Qatar Airways|Gulf Air|The UAE’s national airline.",
+"Which alliance does Qatar Airways belong to?|oneworld|Star Alliance|SkyTeam|Value Alliance|Alongside American and British Airways.",
+"Which airline is Israel’s flag carrier?|El Al|Arkia|Israir|Royal Jordanian|Based at Ben Gurion Airport.",
+"Which airline is Saudi Arabia’s flag carrier?|Saudia|Flynas|Gulf Air|Kuwait Airways|Hubs in Jeddah and Riyadh.",
+"Which airline serves more countries than any other?|Turkish Airlines|Pegasus|Aeroflot|Emirates|Hub in Istanbul.",
+"Which airline is known for the “Singapore Girl”?|Singapore Airlines|Thai Airways|Cathay Pacific|Malaysia Airlines|Its famous marketing icon.",
+"Which Hong Kong airline has a brushwing logo?|Cathay Pacific|Singapore Airlines|ANA|Korean Air|Hub at Hong Kong International.",
+"Which airline is South Korea’s flag carrier?|Korean Air|Asiana|Jeju Air|China Airlines|A SkyTeam member at Incheon.",
+"Air India returned to which company in 2022?|Tata Group|Reliance|Adani Group|Mahindra|Tata founded the airline.",
+"Which airline is Thailand’s flag carrier?|Thai Airways|Bangkok Airways|Thai AirAsia|Nok Air|Hub at Suvarnabhumi.",
+"Which airline is China’s flag carrier, based in Beijing?|Air China|China Southern|China Eastern|Hainan Airlines|A Star Alliance member.",
+"Which airline is Indonesia’s flag carrier?|Garuda Indonesia|Lion Air|Philippine Airlines|Thai Airways|Named after a mythical bird.",
+"Which airline is Asia’s oldest under its original name?|Philippine Airlines|Cebu Pacific|AirAsia|Japan Airlines|Founded in 1941.",
+"Which airline says “Now Everyone Can Fly”?|AirAsia|Scoot|Cebu Pacific|VietJet|A Malaysian low-cost carrier.",
+"In Rain Man, which airline does Raymond trust?|Qantas|Delta|United|American|He says it never crashed.",
+"Which airline’s logo is the koru spiral?|Air New Zealand|Qantas|Virgin Australia|Jetstar|Inspired by a fern frond.",
+"Which airline is Africa’s largest?|Ethiopian Airlines|EgyptAir|Kenya Airways|Royal Air Maroc|Hub at Addis Ababa.",
+"Which airline is South Africa’s flag carrier?|South African Airways|Kenya Airways|Air Namibia|RwandAir|Based in Johannesburg.",
+"Which Cairo airline is in Star Alliance?|EgyptAir|Royal Jordanian|Saudia|Middle East Airlines|Egypt’s flag carrier.",
+"Which group formed from LAN Chile and TAM?|LATAM|Avianca|Copa|Aerolíneas Argentinas|They merged in 2012.",
+"Which Colombian airline dates to 1919?|Avianca|LATAM|Copa|Aeroméxico|One of the world’s oldest airlines.",
+"Which airline is Mexico’s flag carrier?|Aeroméxico|Volaris|VivaAerobus|Interjet|Based in Mexico City.",
+"Which airline hubs at Panama City’s Tocumen?|Copa Airlines|Avianca|LATAM|Aeroméxico|The “Hub of the Americas.”"]},
+{n:"Airlines of the World, Part 2",d:"More carriers from Dubai to Buenos Aires",r:[
+"Which airline has the biggest A380 fleet?|Emirates|Qatar Airways|Etihad|Lufthansa|Based in Dubai.",
+"Which Japanese airline is in oneworld?|Japan Airlines|ANA|Peach|Skymark|Its rival ANA is in Star Alliance.",
+"Which alliance is ANA in?|Star Alliance|oneworld|SkyTeam|Asia Pacific Alliance|ANA launched the 787.",
+"Which Irish airline carries the most passengers in Europe?|Ryanair|easyJet|Wizz Air|Aer Lingus|Known for rock-bottom fares.",
+"Which Dutch airline is oldest under its original name?|KLM|Air France|Lufthansa|Qantas|Founded in 1919.",
+"Which Brisbane airline rivals Qantas?|Virgin Australia|Jetstar|Rex|Air New Zealand|Australia’s other big domestic airline.",
+"Which budget airline does Qantas own?|Jetstar|Scoot|AirAsia|Tigerair|Flies Australia, Asia and the Pacific.",
+"Which Honolulu airline has a woman with a flower on its tail?|Hawaiian Airlines|Alaska Airlines|Southwest|Mokulele|Part of Alaska Air Group since 2024.",
+"Which airline leads India’s domestic market?|IndiGo|Air India|SpiceJet|Akasa Air|Founded in 2006.",
+"Which Guangzhou airline is Asia’s largest by fleet?|China Southern|Air China|Hainan Airlines|Sichuan Airlines|A SkyTeam member.",
+"Which Shanghai airline is in SkyTeam?|China Eastern|Air China|Shenzhen Airlines|Spring Airlines|Hubs at Pudong and Hongqiao.",
+"Which airline is Malaysia’s flag carrier?|Malaysia Airlines|AirAsia|Thai Airways|Singapore Airlines|A oneworld member in Kuala Lumpur.",
+"Which airline is Vietnam’s flag carrier?|Vietnam Airlines|VietJet Air|Bamboo Airways|Lao Airlines|A SkyTeam member.",
+"Which airline offers a free stopover in Reykjavik?|Icelandair|Finnair|SAS|Norwegian|Iceland’s flag carrier.",
+"Which airline puts famous faces on its tails?|Norwegian|SAS|Widerøe|Finnair|Its “Tail Fin Heroes.”",
+"Which airline is Austria’s flag carrier?|Austrian Airlines|Swiss|LOT|Brussels Airlines|Based in Vienna.",
+"Which airline is Morocco’s flag carrier?|Royal Air Maroc|EgyptAir|Tunisair|Air Algérie|Based in Casablanca.",
+"Which airline’s slogan is “The Pride of Africa”?|Kenya Airways|Ethiopian Airlines|RwandAir|South African Airways|Based in Nairobi.",
+"Which airline is Argentina’s flag carrier?|Aerolíneas Argentinas|LATAM|GOL|Avianca|A SkyTeam member.",
+"Which Turkish low-cost airline flies from Sabiha Gökçen?|Pegasus Airlines|Turkish Airlines|SunExpress|AnadoluJet|Istanbul’s Asian-side airport.",
+"Which airline is Jordan’s flag carrier?|Royal Jordanian|Middle East Airlines|Gulf Air|Oman Air|Based in Amman.",
+"Which airline is Bahrain’s flag carrier?|Gulf Air|Kuwait Airways|Oman Air|Saudia|Based near Manama."]}
+];
+SETS.forEach(s=>s.items=s.r.map(x=>{const p=x.split("|");return{q:p[0],c:p[1],w:[p[2],p[3],p[4]],e:p[5]}}));
+const app=document.getElementById("app");
+let S;
+const sh=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
+function el(t,x,c,p){const e=document.createElement(t);if(x)e.textContent=x;if(c)e.className=c;if(p)p.append(e);return e}
+function menu(){
+ app.replaceChildren();
+ SETS.forEach(s=>{const b=el("button","","set",app);el("strong",s.n,"",b);el("span",s.items.length+" questions. "+s.d,"",b);b.onclick=()=>start(s.items,s.n)});
+}
+function start(items,t){S={t,items,qs:sh(items),i:0,sc:0,m:[]};show()}
+function show(){
+ const q=S.qs[S.i];if(!q)return end();
+ app.replaceChildren();
+ const pass=el("div","","pass",app),top=el("div","","top",pass);
+ el("span",S.t,"",top);el("span",(S.i+1)+" of "+S.qs.length,"",top);
+ const bar=el("div","","bar",pass),f=el("i","","",bar);f.style.width=(S.i/S.qs.length*100)+"%";
+ el("p",q.q,"q",pass);
+ const box=el("div","","opts",pass),fb=el("div","","fb",pass);
+ const nx=el("button",S.i+1<S.qs.length?"Next question":"See results","go",pass);nx.hidden=true;nx.onclick=()=>{S.i++;show()};
+ sh([q.c,...q.w]).forEach(o=>{const b=el("button",o,"opt",box);b.onclick=()=>{
+  [...box.children].forEach(x=>{x.disabled=true;if(x.textContent===q.c)x.classList.add("ok")});
+  if(o===q.c)S.sc++;else{b.classList.add("bad");S.m.push(q)}
+  fb.textContent=(o===q.c?"Correct. ":"Not quite. ")+q.e;nx.hidden=false;nx.focus()}});
+}
+function end(){
+ app.replaceChildren();
+ const pass=el("div","","pass",app),d=el("div","","end",pass),n=S.qs.length,p=Math.round(S.sc/n*100);
+ el("h2","You scored "+S.sc+" out of "+n,"",d);
+ el("p",p>=90?"Captain material.":p>=70?"Smooth flight.":p>=40?"A bit of turbulence. Try again.":"Time for a refresher. Try again.","sub",d);
+ const it=S.items,t=S.t,m=S.m;
+ el("button","Try again","btn",d).onclick=()=>start(it,t);
+ if(m.length)el("button","Review "+m.length+" missed","btn alt",d).onclick=()=>start(m,"Missed questions");
+ el("button","All quizzes","btn alt",d).onclick=menu;
+}
+menu();
+</script>
+</body>
+</html>
